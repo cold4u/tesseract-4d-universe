@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260923-04">
 </head>
 <body>
 
@@ -23,12 +23,12 @@
 
     <!-- Station Dock -->
     <ul class="nav-stations">
-      <li><button class="station-tab-btn active" data-station="galaxy">🌌 Milky Way</button></li>
-      <li><button class="station-tab-btn" data-station="blackhole">🕳️ Black Hole Sandbox</button></li>
-      <li><button class="station-tab-btn" data-station="pulsar">⚡ Pulsar</button></li>
-      <li><button class="station-tab-btn" data-station="rocket">🚀 3D Exploded Rocket</button></li>
-      <li><button class="station-tab-btn" data-station="voyager">🛰️ Voyager Missions</button></li>
-      <li><button class="station-tab-btn" data-station="tesseract">🧊 Tesseract (4D)</button></li>
+      <li><a href="#station-galaxy" class="station-tab-btn active">🌌 Milky Way</a></li>
+      <li><a href="#station-blackhole" class="station-tab-btn">🕳️ Black Hole Sandbox</a></li>
+      <li><a href="#station-pulsar" class="station-tab-btn">⚡ Pulsar</a></li>
+      <li><a href="#station-rocket" class="station-tab-btn">🚀 3D Exploded Rocket</a></li>
+      <li><a href="#station-voyager" class="station-tab-btn">🛰️ Voyager Missions</a></li>
+      <li><a href="#station-tesseract" class="station-tab-btn">🧊 Tesseract (4D)</a></li>
     </ul>
 
     <!-- Audio Toggle -->
@@ -388,7 +388,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-  <!-- Application Module -->
-  <script type="module" src="./js/app.js"></script>
+  <!-- Application Module with cache buster -->
+  <script type="module" src="./js/app.js?v=20260923-04"></script>
 </body>
 </html>

@@ -146,6 +146,7 @@ body {
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-muted);
+  text-decoration: none;
   padding: 0.45rem 0.85rem;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -233,14 +234,12 @@ body {
   margin-right: auto;
 }
 
-/* Station Sections */
+/* Station Sections - All visible and scrollable */
 .station-section {
-  display: none; /* Controlled by active tab */
-  animation: fadeInStation 0.35s ease;
-}
-
-.station-section.active {
   display: block;
+  margin-bottom: 5.5rem;
+  scroll-margin-top: 90px;
+  animation: fadeInStation 0.4s ease;
 }
 
 @keyframes fadeInStation {

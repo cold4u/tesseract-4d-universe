@@ -4,13 +4,13 @@
  * 3D Exploded Rocket, Voyager Missions, and the 4D Tesseract Widget.
  */
 
-import { MilkyWayGalaxy } from './galaxy.js';
-import { BlackHoleSimulator } from './blackhole.js';
-import { PulsarSimulator } from './pulsar.js';
-import { RocketExplodedViewer } from './rocket.js';
-import { MissionsManager } from './missions.js';
-import { TesseractWidget } from './tesseract-widget.js';
-import { CosmicAudio } from './audio.js';
+import { MilkyWayGalaxy } from './galaxy.js?v=20260923-02';
+import { BlackHoleSimulator } from './blackhole.js?v=20260923-02';
+import { PulsarSimulator } from './pulsar.js?v=20260923-02';
+import { RocketExplodedViewer } from './rocket.js?v=20260923-02';
+import { MissionsManager } from './missions.js?v=20260923-02';
+import { TesseractWidget } from './tesseract-widget.js?v=20260923-02';
+import { CosmicAudio } from './audio.js?v=20260923-02';
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Audio Engine
@@ -28,25 +28,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Station Navigation Tab Switching
-  const tabButtons = document.querySelectorAll('.station-tab-btn');
-  const stationSections = document.querySelectorAll('.station-section');
+  // 2. Smooth Navigation and Active Section Tracking
+  const navLinks = document.querySelectorAll('.station-tab-btn');
+  const sections = document.querySelectorAll('.station-section');
 
-  function switchStation(stationId) {
-    tabButtons.forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-station') === stationId);
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const top = section.offsetTop - 120;
+      if (window.scrollY >= top) {
+        current = section.getAttribute('id');
+      }
     });
-    stationSections.forEach(sec => {
-      sec.classList.toggle('active', sec.id === `station-${stationId}`);
-    });
-    window.dispatchEvent(new Event('resize'));
-    if (audioPlaying) audio.playChime(1.2);
-  }
 
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const station = btn.getAttribute('data-station');
-      switchStation(station);
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === `#${current}`) {
+        link.classList.add('active');
+      }
+    });
+  });
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const targetId = link.getAttribute('href');
+      if (targetId && targetId.startsWith('#')) {
+        const targetElem = document.querySelector(targetId);
+        if (targetElem) {
+          e.preventDefault();
+          targetElem.scrollIntoView({ behavior: 'smooth' });
+          if (audioPlaying) audio.playChime(1.2);
+        }
+      }
     });
   });
 
