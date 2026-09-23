@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4D Universe & Tesseract Observatory | Interactive Hypercube Experience</title>
+  <meta name="description" content="Explore the fourth dimension, the tesseract (hypercube), and cosmological higher dimensions with a real-time interactive 3D/4D visualizer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="#observatory" class="nav-brand">
+      <div class="brand-icon-4d">
+        <div class="brand-icon-inner"></div>
+      </div>
+      <div class="brand-title">HYPERDIMENSION</div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#observatory">4D Observatory</a></li>
+      <li><a href="#slicer">Flatland & Slicing</a></li>
+      <li><a href="#theory">Spacetime & Cosmology</a></li>
+      <li><a href="#compendium">4D Polytopes</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button id="audio-toggle-btn" class="btn-cosmic-audio" aria-label="Toggle Cosmic Soundscape">
+        <div class="sound-waves" id="sound-wave-icon" style="opacity: 0.4;">
+          <span></span><span></span><span></span>
+        </div>
+        <span class="btn-text">Cosmic Sound: OFF</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero & 3D Interactive Observatory -->
+  <header id="observatory" class="hero-observatory">
+    <!-- 3D Canvas Viewport -->
+    <div class="viewport-container">
+      <div id="viewport3d"></div>
+    </div>
+
+    <!-- UI Overlay Panels -->
+    <div class="stage-overlay">
+      
+      <!-- Top Left: Hero Details -->
+      <div class="glass-panel hero-badge-box">
+        <div class="cosmic-badge">Hyperspatial Physics</div>
+        <h1 class="hero-main-title">The Tesseract & 4D Universe</h1>
+        <p class="hero-subtitle">
+          Directly interact with a real-time 4-dimensional hypercube projected into 3D cosmic space. Rotate through hyperspatial planes and discover higher dimensions.
+        </p>
+      </div>
+
+      <!-- Top Right: Telemetry HUD & Coordinate Inspector -->
+      <div class="glass-panel telemetry-panel">
+        <div class="panel-header">
+          <span class="panel-title">
+            <span class="status-dot"></span>
+            Telemetry HUD
+          </span>
+          <span style="font-size: 0.72rem; color: var(--accent-cyan);">FPS: <span id="hud-fps">60</span></span>
+        </div>
+
+        <div class="telemetry-grid">
+          <div class="telemetry-item">
+            <span class="tel-label">Polytope</span>
+            <span class="tel-val" id="hud-polytope">Tesseract (8-Cell)</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">Schläfli Symbol</span>
+            <span class="tel-val" id="hud-schlafli">{4,3,3}</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">4D Vertices</span>
+            <span class="tel-val" id="hud-vertices">16</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">Edges</span>
+            <span class="tel-val" id="hud-edges">32</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">2D Faces</span>
+            <span class="tel-val" id="hud-faces">24</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">3D Cells</span>
+            <span class="tel-val" id="hud-cells">8 Cubes</span>
+          </div>
+        </div>
+
+        <div class="coord-inspector" id="vertex-coords-output">
+          <div class="coord-row placeholder">
+            <em>Hover over any vertex to inspect real-time 4D coordinates</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Floating Interaction Hint -->
+      <div class="stage-center-hint">
+        <span>✦</span> Drag to Orbit 3D • Scroll to Zoom • Sliders control 4th Dimension (W)
+      </div>
+
+      <!-- Bottom Left: Polytope Selection & Motion Presets -->
+      <div class="glass-panel controls-left-panel">
+        <div class="panel-header">
+          <span class="panel-title">Polytope & Presets</span>
+        </div>
+
+        <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; text-transform: uppercase;">Select 4D Object</div>
+        <div class="btn-group-chips">
+          <button class="chip-btn active" data-shape="tesseract">Tesseract (8-Cell)</button>
+          <button class="chip-btn" data-shape="16cell">16-Cell (Dual)</button>
+          <button class="chip-btn" data-shape="5cell">5-Cell (Simplex)</button>
+          <button class="chip-btn" data-shape="24cell">24-Cell (Unique)</button>
+          <button class="chip-btn" data-shape="hypersphere">4D Glome</button>
+        </div>
+
+        <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; text-transform: uppercase;">Hyper-Motion Presets</div>
+        <div class="btn-group-chips">
+          <button class="chip-btn active" data-preset="inside_out">Inside-Out Flip (XW)</button>
+          <button class="chip-btn" data-preset="clifford_double">Clifford Double (XW+YZ)</button>
+          <button class="chip-btn" data-preset="cosmic_drift">Cosmic Drift (6 Planes)</button>
+          <button class="chip-btn" data-preset="unfolded_dali">Dalí Unfolded Net</button>
+          <button class="chip-btn" data-preset="frozen">Freeze Symmetry</button>
+        </div>
+
+        <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; text-transform: uppercase;">Projection Geometry</div>
+        <div class="btn-group-chips">
+          <button class="chip-btn active" data-projection="perspective">4D Perspective</button>
+          <button class="chip-btn" data-projection="orthographic">Orthographic Shadow</button>
+          <button class="chip-btn" data-projection="stereographic">Stereographic</button>
+        </div>
+      </div>
+
+      <!-- Bottom Right: 4D Hyper-Planes & Visual Options -->
+      <div class="glass-panel controls-right-panel">
+        <div class="panel-header">
+          <span class="panel-title">4D Hyper-Rotation Planes</span>
+          <button id="btn-reset-rot" class="chip-btn" style="padding: 0.2rem 0.6rem; font-size: 0.7rem;">Reset</button>
+        </div>
+
+        <!-- 4D Hyper-Rotations (W-axis) -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Plane <span class="hyper-highlight">X-W</span> (Inside-Out)</span>
+          </div>
+          <input type="range" id="slider-xw" class="hyper-thumb" min="-30" max="30" value="12">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Plane <span class="hyper-highlight">Y-W</span></span>
+          </div>
+          <input type="range" id="slider-yw" class="hyper-thumb" min="-30" max="30" value="8">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Plane <span class="hyper-highlight">Z-W</span></span>
+          </div>
+          <input type="range" id="slider-zw" class="hyper-thumb" min="-30" max="30" value="4">
+        </div>
+
+        <!-- 3D Spatial Rotations -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Plane <span class="plane-highlight">X-Z</span> (Spatial Yaw)</span>
+          </div>
+          <input type="range" id="slider-xz" min="-30" max="30" value="5">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Plane <span class="plane-highlight">X-Y</span></span>
+          </div>
+          <input type="range" id="slider-xy" min="-30" max="30" value="0">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Plane <span class="plane-highlight">Y-Z</span></span>
+          </div>
+          <input type="range" id="slider-yz" min="-30" max="30" value="0">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>4D Camera Focal Distance (d)</span>
+          </div>
+          <input type="range" id="slider-dist-4d" min="1.5" max="5.0" step="0.1" value="2.8">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Cell Face Opacity</span>
+          </div>
+          <input type="range" id="slider-opacity" min="0" max="60" value="15">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Dalí Net Unfold Factor</span>
+          </div>
+          <input type="range" id="slider-unfold" min="0" max="100" value="0">
+        </div>
+
+        <!-- Visibility Toggles -->
+        <div class="toggle-grid">
+          <label class="toggle-label">
+            <input type="checkbox" id="toggle-cells" checked> Cells
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="toggle-edges" checked> Edges
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="toggle-vertices" checked> Vertices
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Content Section 1: 4D Slicing & Flatland Laboratory -->
+  <section id="slicer" class="content-wrapper">
+    <div class="section-head">
+      <span class="section-pretitle">The Flatland Analogy</span>
+      <h2 class="section-title">4D Hyperplane Slicing Laboratory</h2>
+      <p class="section-desc">
+        Just as a 2D Flatlander sees only a growing and shrinking 2D circle when a 3D sphere passes through their world, 3D humans perceive 4D objects as morphing 3D cross-sections!
+      </p>
+    </div>
+
+    <div class="slicer-card">
+      <div class="slicer-viewport-col">
+        <div class="slice-canvas-wrapper">
+          <canvas id="sliceCanvas"></canvas>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center;">
+          Drag inside viewport to inspect the 3D cross-section shape
+        </div>
+      </div>
+
+      <div class="slicer-controls-col">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem; text-transform: uppercase;">Object Traversing 3D Space</div>
+          <div class="btn-group-chips">
+            <button class="chip-btn active" data-slice-shape="tesseract_axis">Tesseract (Axis-First)</button>
+            <button class="chip-btn" data-slice-shape="tesseract_corner">Tesseract (Corner-First)</button>
+            <button class="chip-btn" data-slice-shape="glome">4D Hypersphere (Glome)</button>
+          </div>
+
+          <div class="slicer-slider-box">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <span style="font-size: 0.85rem; font-weight: 600;">Hyperplane Intersection Coordinate:</span>
+              <span class="slicer-val-badge">w = <span id="slice-w-val">0.00</span></span>
+            </div>
+            <input type="range" id="slice-w-slider" min="-1.5" max="1.5" step="0.05" value="0.0">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); margin-top: 0.3rem;">
+              <span>-1.5 (Before Entry)</span>
+              <span>0.0 (Hyper-Equator)</span>
+              <span>+1.5 (After Departure)</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="sliceTelemetry" style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid var(--border-subtle);">
+          <span class="badge-tag">3D Observer Telemetry</span>
+          <p class="telemetry-text">Loading slicing simulation...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Section 2: Spacetime & Cosmology -->
+  <section id="theory" class="content-wrapper">
+    <div class="section-head">
+      <span class="section-pretitle">Theoretical Physics & Cosmology</span>
+      <h2 class="section-title">The Fourth Dimension & The Universe</h2>
+      <p class="section-desc">
+        Why do physicists study the fourth dimension? From Einstein's relativistic spacetime continuum to extra compactified dimensions in quantum gravity, higher dimensions are the bedrock of modern physics.
+      </p>
+    </div>
+
+    <div class="universe-grid">
+      <!-- Card 1: Spacetime & Minkowski -->
+      <article class="theory-card">
+        <div class="theory-icon">🌌</div>
+        <h3>Minkowski Spacetime Continuum</h3>
+        <p>
+          In 1908, Hermann Minkowski unified space and time into a single four-dimensional pseudo-Riemannian manifold. Instead of Euclidean distance, the spacetime interval is invariant under Lorentz boosts.
+        </p>
+        <div class="math-formula">
+          ds² = -c²dt² + dx² + dy² + dz²
+        </div>
+      </article>
+
+      <!-- Card 2: General Relativity -->
+      <article class="theory-card">
+        <div class="theory-icon">🪐</div>
+        <h3>General Relativity: Gravity as 4D Curvature</h3>
+        <p>
+          Albert Einstein showed that gravity is not an invisible force pulling objects, but the physical curvature of four-dimensional spacetime caused by mass and energy. Matter tells spacetime how to curve; spacetime tells matter how to move.
+        </p>
+        <div class="math-formula">
+          G_μν + Λ g_μν = (8πG / c⁴) T_μν
+        </div>
+      </article>
+
+      <!-- Card 3: Kaluza-Klein Theory -->
+      <article class="theory-card">
+        <div class="theory-icon">⚡</div>
+        <h3>Kaluza-Klein: 5th Dimension Unification</h3>
+        <p>
+          In 1921, Theodor Kaluza and Oskar Klein proved that by adding a tiny, curled-up 5th spatial dimension to Einstein's equations, electromagnetism emerges naturally from the geometry of gravity alone!
+        </p>
+        <div class="math-formula">
+          5D Metric g_MN → 4D Gravity (g_μν) + EM Vector (A_μ)
+        </div>
+      </article>
+
+      <!-- Card 4: String Theory & Calabi-Yau -->
+      <article class="theory-card">
+        <div class="theory-icon">🌀</div>
+        <h3>String Theory & 10D/11D Supergravity</h3>
+        <p>
+          Superstring theory and M-theory require 10 or 11 dimensions for mathematical consistency. The extra 6 spatial dimensions are compactified into microscopic Calabi-Yau manifolds at the Planck scale (10⁻³⁵ meters).
+        </p>
+        <div class="math-formula">
+          10 Dimensions = 4D Spacetime ⊗ 6D Calabi-Yau Space
+        </div>
+      </article>
+
+      <!-- Card 5: The Flatland Analogy -->
+      <article class="theory-card">
+        <div class="theory-icon">📐</div>
+        <h3>The Flatland Dimensional Analogy</h3>
+        <p>
+          Edwin A. Abbott's 1884 masterpiece <em>Flatland</em> introduced how lower-dimensional beings conceptualize higher realms. A 2D square cannot comprehend "up", yet when a 3D sphere visits, it sees a circle magically appearing, growing, and vanishing.
+        </p>
+        <div class="math-formula">
+          0D (Point) → 1D (Line) → 2D (Square) → 3D (Cube) → 4D (Tesseract)
+        </div>
+      </article>
+
+      <!-- Card 6: Dali's Corpus Hypercubus -->
+      <article class="theory-card">
+        <div class="theory-icon">🎨</div>
+        <h3>Salvador Dalí's Corpus Hypercubus</h3>
+        <p>
+          In 1954, surrealist artist Salvador Dalí painted <em>Corpus Hypercubus</em>, depicting the crucifixion upon the unfolded 3D net of a 4-dimensional tesseract—an 8-cube Latin cross bridging the earthly and the transcendent.
+        </p>
+        <div class="math-formula">
+          4D Tesseract unfolds into 8 connected 3D cubes
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Content Section 3: 4D Polytopes Compendium -->
+  <section id="compendium" class="content-wrapper">
+    <div class="section-head">
+      <span class="section-pretitle">Hyper-Geometry Catalogue</span>
+      <h2 class="section-title">The Regular 4-Polytopes</h2>
+      <p class="section-desc">
+        While 3D space possesses exactly 5 regular Platonic solids, 4D Euclidean space is home to exactly 6 regular convex polychora! Explore their geometric profiles.
+      </p>
+    </div>
+
+    <div class="polytopes-grid">
+      <!-- Tesseract -->
+      <div class="polytope-spec-card">
+        <div class="spec-head">
+          <h4>Tesseract (Hypercube)</h4>
+          <span class="spec-schlafli">{4,3,3}</span>
+        </div>
+        <table class="spec-table">
+          <tr><td>Vertices:</td><td>16</td></tr>
+          <tr><td>Edges:</td><td>32</td></tr>
+          <tr><td>Faces:</td><td>24 Squares</td></tr>
+          <tr><td>Cells:</td><td>8 Cubes</td></tr>
+          <tr><td>Dual Polytope:</td><td>16-Cell</td></tr>
+        </table>
+        <p class="spec-desc">
+          The 4D hypercube. Constructed by translating a 3D cube perpendicular to 3D space into the 4th dimension.
+        </p>
+      </div>
+
+      <!-- 16-Cell -->
+      <div class="polytope-spec-card">
+        <div class="spec-head">
+          <h4>16-Cell (Hexadecachoron)</h4>
+          <span class="spec-schlafli">{3,3,4}</span>
+        </div>
+        <table class="spec-table">
+          <tr><td>Vertices:</td><td>8</td></tr>
+          <tr><td>Edges:</td><td>24</td></tr>
+          <tr><td>Faces:</td><td>32 Triangles</td></tr>
+          <tr><td>Cells:</td><td>16 Tetrahedra</td></tr>
+          <tr><td>Dual Polytope:</td><td>Tesseract</td></tr>
+        </table>
+        <p class="spec-desc">
+          The 4D analogue of the regular octahedron. Every pair of non-opposite vertices forms an edge.
+        </p>
+      </div>
+
+      <!-- 5-Cell -->
+      <div class="polytope-spec-card">
+        <div class="spec-head">
+          <h4>5-Cell (Pentachoron)</h4>
+          <span class="spec-schlafli">{3,3,3}</span>
+        </div>
+        <table class="spec-table">
+          <tr><td>Vertices:</td><td>5</td></tr>
+          <tr><td>Edges:</td><td>10</td></tr>
+          <tr><td>Faces:</td><td>10 Triangles</td></tr>
+          <tr><td>Cells:</td><td>5 Tetrahedra</td></tr>
+          <tr><td>Dual Polytope:</td><td>Self-Dual</td></tr>
+        </table>
+        <p class="spec-desc">
+          The 4-simplex. The simplest possible 4D regular polytope, analogous to the tetrahedron in 3D and triangle in 2D.
+        </p>
+      </div>
+
+      <!-- 24-Cell -->
+      <div class="polytope-spec-card">
+        <div class="spec-head">
+          <h4>24-Cell (Icositetrachoron)</h4>
+          <span class="spec-schlafli">{3,4,3}</span>
+        </div>
+        <table class="spec-table">
+          <tr><td>Vertices:</td><td>24</td></tr>
+          <tr><td>Edges:</td><td>96</td></tr>
+          <tr><td>Faces:</td><td>96 Triangles</td></tr>
+          <tr><td>Cells:</td><td>24 Octahedra</td></tr>
+          <tr><td>Dual Polytope:</td><td>Self-Dual</td></tr>
+        </table>
+        <p class="spec-desc">
+          A miraculous gem of geometry unique strictly to 4 dimensions. It has no equivalent in 3D or 5D dimensions!
+        </p>
+      </div>
+
+      <!-- 4D Hypersphere -->
+      <div class="polytope-spec-card">
+        <div class="spec-head">
+          <h4>4D Hypersphere (Glome)</h4>
+          <span class="spec-schlafli">S³</span>
+        </div>
+        <table class="spec-table">
+          <tr><td>Dimension:</td><td>4D Embedding</td></tr>
+          <tr><td>Hyper-Surface:</td><td>2π² R³</td></tr>
+          <tr><td>Hyper-Volume:</td><td>½ π² R⁴</td></tr>
+          <tr><td>Cross-Section:</td><td>Dynamic 3D Spheres</td></tr>
+          <tr><td>Topology:</td><td>Simply Connected</td></tr>
+        </table>
+        <p class="spec-desc">
+          The 3-sphere manifold in 4D space. The fundamental building block of cosmological closed universe models.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="#observatory">Interactive 4D Observatory</a>
+      <a href="#slicer">Flatland Lab</a>
+      <a href="#theory">Spacetime & Cosmology</a>
+      <a href="#compendium">4-Polytopes</a>
+    </div>
+    <p>
+      Built for interactive exploration of four-dimensional Euclidean geometry, relativistic cosmology, and hyper-space mathematics.
+    </p>
+  </footer>
+
+  <!-- Three.js Libraries from CDN (with automatic fallback to built-in Canvas 3D engine if offline) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Application Modules -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
