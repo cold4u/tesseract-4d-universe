@@ -1,16 +1,22 @@
 /**
- * Black Hole Physics & Cataclysmic Collision Sandbox
- * Simulates relativistic accretion, Doppler beaming, gravitational lensing,
- * and what happens when a Black Hole encounters the Sun, Earth, or Light.
+ * Realistic Black Hole & Celestial Cataclysm Simulator
+ * Features Gargantua-style warped gravitational lensing, relativistic Doppler accretion disk,
+ * polar relativistic jets, and an automated multi-phase Spaghettification / Collision sequence.
  */
 
 export class BlackHoleSimulator {
   constructor(containerElement, telemetryElement) {
     this.container = containerElement;
     this.telemetryElem = telemetryElement;
+
     this.scenario = 'sun'; // 'sun', 'earth', 'light'
-    this.distanceAU = 5.0; // Distance in AU (10.0 to 0.1)
-    this.blackHoleMass = 10; // Solar masses M_sun
+    this.distanceAU = 8.0; // 10.0 (distant) down to 0.2 (swallowed)
+    this.blackHoleMass = 10; // M_sun
+
+    // Cinematic Animation State
+    this.isPlaying = false;
+    this.simProgress = 0.0; // 0.0 (start at 10 AU) to 1.0 (swallowed at 0.2 AU)
+    this.simSpeed = 0.003; // progress increment per frame
 
     this.isThree = typeof window.THREE !== 'undefined';
     this.init();
@@ -33,7 +39,7 @@ export class BlackHoleSimulator {
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
-    this.camera.position.set(0, 4.5, 14);
+    this.camera.position.set(0, 3.8, 14.5);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setSize(w, h);
@@ -44,18 +50,18 @@ export class BlackHoleSimulator {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.dampingFactor = 0.05;
-      this.controls.maxDistance = 25;
-      this.controls.minDistance = 3;
+      this.controls.maxDistance = 26;
+      this.controls.minDistance = 3.5;
     }
 
-    // 1. Event Horizon (Absolute Shadow)
-    const horizonGeo = new THREE.SphereGeometry(1.2, 48, 48);
+    // 1. Event Horizon Shadow (True Black Sphere)
+    const horizonGeo = new THREE.SphereGeometry(1.25, 48, 48);
     const horizonMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
     this.eventHorizon = new THREE.Mesh(horizonGeo, horizonMat);
     this.scene.add(this.eventHorizon);
 
-    // 2. Photon Sphere / Einstein Ring (Lensed Light Ring)
-    const photonRingGeo = new THREE.RingGeometry(1.25, 1.45, 64);
+    // 2. Photon Sphere Ring (Einstein Ring around shadow)
+    const photonRingGeo = new THREE.RingGeometry(1.28, 1.48, 64);
     const photonRingMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
@@ -66,76 +72,154 @@ export class BlackHoleSimulator {
     this.photonRing = new THREE.Mesh(photonRingGeo, photonRingMat);
     this.scene.add(this.photonRing);
 
-    // 3. Relativistic Accretion Disk (Doppler Beamed: approaching side is brighter & blue-tinted)
-    const diskCount = 4500;
-    const diskGeo = new THREE.BufferGeometry();
-    const diskPos = new Float32Array(diskCount * 3);
-    const diskColors = new Float32Array(diskCount * 3);
+    // 3. Real Gargantua-Style Gravitational Lensed Disk:
+    // A. Horizontal equatorial accretion disk
+    // B. Vertical warped light ring (light from back of disk bent up and over the top/bottom!)
+    this.buildGargantuaAccretionDisk();
 
-    this.diskData = [];
-    for (let i = 0; i < diskCount; i++) {
-      const radius = 1.6 + Math.pow(Math.random(), 1.5) * 4.2;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = (1.0 / Math.sqrt(radius)) * 0.035; // Keplerian orbital velocity
+    // 4. Relativistic Polar Jets (Active during high accretion / tidal disruption)
+    this.buildRelativisticJets();
 
-      diskPos[i * 3] = Math.cos(angle) * radius;
-      diskPos[i * 3 + 1] = (Math.random() - 0.5) * 0.15;
-      diskPos[i * 3 + 2] = Math.sin(angle) * radius;
-
-      // Base gold/amber accretion color
-      diskColors[i * 3] = 1.0;
-      diskColors[i * 3 + 1] = 0.6;
-      diskColors[i * 3 + 2] = 0.1;
-
-      this.diskData.push({ radius, angle, speed, y: diskPos[i * 3 + 1] });
-    }
-
-    diskGeo.setAttribute('position', new THREE.BufferAttribute(diskPos, 3));
-    diskGeo.setAttribute('color', new THREE.BufferAttribute(diskColors, 3));
-
-    const diskMat = new THREE.PointsMaterial({
-      size: 0.14,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending
-    });
-    this.accretionDisk = new THREE.Points(diskGeo, diskMat);
-    this.accretionDisk.rotation.x = Math.PI / 3.2; // Tilted for cinematic angle
-    this.scene.add(this.accretionDisk);
-
-    // 4. Target Body Group (Sun or Earth or Light Rays)
+    // 5. Target Celestial Body (Sun or Earth)
     this.targetGroup = new THREE.Group();
     this.scene.add(this.targetGroup);
 
-    // 5. Plasma Stream Group (for Tidal Disruption)
-    this.plasmaCount = 1500;
-    const plasmaGeo = new THREE.BufferGeometry();
-    const plasmaPos = new Float32Array(this.plasmaCount * 3);
-    const plasmaCols = new Float32Array(this.plasmaCount * 3);
-    plasmaGeo.setAttribute('position', new THREE.BufferAttribute(plasmaPos, 3));
-    plasmaGeo.setAttribute('color', new THREE.BufferAttribute(plasmaCols, 3));
-
-    const plasmaMat = new THREE.PointsMaterial({
-      size: 0.18,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending
-    });
-    this.plasmaMesh = new THREE.Points(plasmaGeo, plasmaMat);
-    this.scene.add(this.plasmaMesh);
+    // 6. Spaghettified Plasma Accretion Stream Ribbon
+    this.buildPlasmaStream();
 
     this.rebuildTargetBody();
 
     window.addEventListener('resize', () => {
       if (!this.container) return;
-      const w = this.container.clientWidth;
-      const h = this.container.clientHeight;
-      this.camera.aspect = w / h;
+      const nw = this.container.clientWidth;
+      const nh = this.container.clientHeight;
+      this.camera.aspect = nw / nh;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
+      this.renderer.setSize(nw, nh);
     });
+  }
+
+  buildGargantuaAccretionDisk() {
+    const THREE = window.THREE;
+    this.diskGroup = new THREE.Group();
+
+    // Part A: Main Horizontal Equatorial Accretion Disk (3,500 particles)
+    const countH = 3500;
+    const geoH = new THREE.BufferGeometry();
+    const posH = new Float32Array(countH * 3);
+    const colH = new Float32Array(countH * 3);
+
+    this.diskParticlesH = [];
+    for (let i = 0; i < countH; i++) {
+      const radius = 1.65 + Math.pow(Math.random(), 1.4) * 4.2;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (1.0 / Math.sqrt(radius)) * 0.038;
+
+      posH[i * 3] = Math.cos(angle) * radius;
+      posH[i * 3 + 1] = (Math.random() - 0.5) * 0.12;
+      posH[i * 3 + 2] = Math.sin(angle) * radius;
+
+      // Golden white inner, fiery orange outer
+      const t = (radius - 1.65) / 4.2;
+      colH[i * 3] = 1.0;
+      colH[i * 3 + 1] = 0.85 - t * 0.45;
+      colH[i * 3 + 2] = 0.3 - t * 0.25;
+
+      this.diskParticlesH.push({ radius, angle, speed, y: posH[i * 3 + 1] });
+    }
+
+    geoH.setAttribute('position', new THREE.BufferAttribute(posH, 3));
+    geoH.setAttribute('color', new THREE.BufferAttribute(colH, 3));
+
+    const matH = new THREE.PointsMaterial({
+      size: 0.13,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.92,
+      blending: THREE.AdditiveBlending
+    });
+    this.diskMeshH = new THREE.Points(geoH, matH);
+    this.diskGroup.add(this.diskMeshH);
+
+    // Part B: Gravitationally Lensed Vertical Halo (Iconic Gargantua halo arching over the top)
+    const countV = 1600;
+    const geoV = new THREE.BufferGeometry();
+    const posV = new Float32Array(countV * 3);
+    const colV = new Float32Array(countV * 3);
+
+    for (let i = 0; i < countV; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 1.55 + Math.pow(Math.random(), 1.6) * 3.2;
+      posV[i * 3] = Math.cos(angle) * r;
+      posV[i * 3 + 1] = Math.sin(angle) * r;
+      posV[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
+
+      colV[i * 3] = 1.0;
+      colV[i * 3 + 1] = 0.65;
+      colV[i * 3 + 2] = 0.15;
+    }
+    geoV.setAttribute('position', new THREE.BufferAttribute(posV, 3));
+    geoV.setAttribute('color', new THREE.BufferAttribute(colV, 3));
+
+    const matV = new THREE.PointsMaterial({
+      size: 0.12,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.75,
+      blending: THREE.AdditiveBlending
+    });
+    this.diskMeshV = new THREE.Points(geoV, matV);
+    this.diskGroup.add(this.diskMeshV);
+
+    this.diskGroup.rotation.x = Math.PI / 3.4; // Cinematic tilt angle
+    this.scene.add(this.diskGroup);
+  }
+
+  buildRelativisticJets() {
+    const THREE = window.THREE;
+    this.jetsGroup = new THREE.Group();
+
+    // Twin cones shooting out vertically along rotational poles
+    const jetGeo = new THREE.ConeGeometry(0.8, 12, 32, 1, true);
+    const jetMat = new THREE.MeshBasicMaterial({
+      color: 0x00f3ff,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.0, // Becomes intense during high accretion / tidal disruption
+      blending: THREE.AdditiveBlending
+    });
+
+    this.northJet = new THREE.Mesh(jetGeo, jetMat);
+    this.northJet.position.y = 6.8;
+
+    this.southJet = new THREE.Mesh(jetGeo, jetMat.clone());
+    this.southJet.position.y = -6.8;
+    this.southJet.rotation.x = Math.PI;
+
+    this.jetsGroup.add(this.northJet);
+    this.jetsGroup.add(this.southJet);
+    this.scene.add(this.jetsGroup);
+  }
+
+  buildPlasmaStream() {
+    const THREE = window.THREE;
+    this.streamCount = 2000;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(this.streamCount * 3);
+    const cols = new Float32Array(this.streamCount * 3);
+
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.18,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending
+    });
+    this.plasmaMesh = new THREE.Points(geo, mat);
+    this.scene.add(this.plasmaMesh);
   }
 
   rebuildTargetBody() {
@@ -147,30 +231,30 @@ export class BlackHoleSimulator {
     }
 
     if (this.scenario === 'sun') {
-      // The Sun: Bright glowing yellow sphere with corona
+      // The Sun: Bright fiery yellow sphere
       const sunGeo = new THREE.SphereGeometry(0.85, 32, 32);
-      const sunMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+      const sunMat = new THREE.MeshBasicMaterial({ color: 0xffe600 });
       this.targetMesh = new THREE.Mesh(sunGeo, sunMat);
 
       // Corona glow
-      const coronaGeo = new THREE.SphereGeometry(1.05, 32, 32);
+      const coronaGeo = new THREE.SphereGeometry(1.15, 32, 32);
       const coronaMat = new THREE.MeshBasicMaterial({
-        color: 0xff6600,
+        color: 0xff5500,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.45,
         blending: THREE.AdditiveBlending
       });
       this.coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
       this.targetGroup.add(this.targetMesh);
       this.targetGroup.add(this.coronaMesh);
     } else if (this.scenario === 'earth') {
-      // The Earth: Blue sphere with atmosphere
+      // The Earth: Vibrant blue & clouds
       const earthGeo = new THREE.SphereGeometry(0.55, 32, 32);
-      const earthMat = new THREE.MeshBasicMaterial({ color: 0x0088ff });
+      const earthMat = new THREE.MeshBasicMaterial({ color: 0x0077ff });
       this.targetMesh = new THREE.Mesh(earthGeo, earthMat);
 
       // Atmosphere glow
-      const atmoGeo = new THREE.SphereGeometry(0.68, 32, 32);
+      const atmoGeo = new THREE.SphereGeometry(0.72, 32, 32);
       const atmoMat = new THREE.MeshBasicMaterial({
         color: 0x00f3ff,
         transparent: true,
@@ -181,7 +265,6 @@ export class BlackHoleSimulator {
       this.targetGroup.add(this.targetMesh);
       this.targetGroup.add(this.coronaMesh);
     } else if (this.scenario === 'light') {
-      // Light rays passing by black hole
       this.targetMesh = null;
       this.coronaMesh = null;
     }
@@ -191,74 +274,117 @@ export class BlackHoleSimulator {
 
   setScenario(type) {
     this.scenario = type;
+    this.resetSimulation();
     if (this.isThree) {
       this.rebuildTargetBody();
     }
-    this.updateScenarioPhysics();
   }
 
   setDistance(dAU) {
     this.distanceAU = parseFloat(dAU);
+    this.simProgress = (10.0 - this.distanceAU) / 9.8;
+    this.updateScenarioPhysics();
+  }
+
+  togglePlay() {
+    this.isPlaying = !this.isPlaying;
+    return this.isPlaying;
+  }
+
+  resetSimulation() {
+    this.isPlaying = false;
+    this.simProgress = 0.0;
+    this.distanceAU = 10.0;
     this.updateScenarioPhysics();
   }
 
   updateScenarioPhysics() {
-    // 3D visual position maps distanceAU [0.1, 10.0] -> [1.8, 8.5]
-    const visualDist = 1.5 + (this.distanceAU / 10.0) * 7.0;
+    // Maps distanceAU [10.0, 0.2] to 3D visual position [9.2, 1.4]
+    const visualDist = 1.3 + (this.distanceAU / 10.0) * 7.8;
+    // Spiral orbital trajectory
+    const orbitalAngle = (1.0 - this.distanceAU / 10.0) * Math.PI * 3.5;
 
     if (this.targetMesh) {
-      this.targetGroup.position.set(visualDist, 0, visualDist * 0.4);
+      const posX = Math.cos(orbitalAngle) * visualDist;
+      const posZ = Math.sin(orbitalAngle) * visualDist;
+      this.targetGroup.position.set(posX, 0, posZ);
 
-      // Spaghettification stretching effect:
-      // When distance drops below Roche limit (around 2.5 AU for Sun, 1.8 AU for Earth)
-      const rocheLimit = this.scenario === 'sun' ? 2.8 : 2.0;
+      // Roche Tidal Disruption Radius
+      // For Sun: ~2.8 AU; for Earth: ~2.0 AU
+      const rocheLimit = this.scenario === 'sun' ? 3.0 : 2.2;
 
       if (this.distanceAU < rocheLimit) {
-        // Stretch target into an ellipse pointing directly at the black hole center (0,0,0)
-        const stretchFactor = 1.0 + (rocheLimit - this.distanceAU) * 1.6;
-        const compressFactor = Math.max(0.1, 1.0 / Math.sqrt(stretchFactor));
-        this.targetMesh.scale.set(stretchFactor, compressFactor, compressFactor);
+        // Severe Spaghettification!
+        const severity = (rocheLimit - this.distanceAU) / rocheLimit; // 0 to 1
+        const stretchX = 1.0 + severity * 3.5; // Stretched along radial line
+        const compressYZ = Math.max(0.08, 1.0 - severity * 0.85);
+
+        this.targetMesh.scale.set(stretchX, compressYZ, compressYZ);
         this.targetMesh.lookAt(0, 0, 0);
 
-        // Update plasma accretion stream
-        this.updatePlasmaStream(visualDist, true);
+        // Fade target body as mass is pulled away into the stream
+        if (this.targetMesh.material) {
+          this.targetMesh.material.opacity = Math.max(0.1, 1.0 - severity * 0.9);
+          this.targetMesh.material.transparent = true;
+        }
+
+        // Activate relativistic plasma stream
+        this.updatePlasmaStream(visualDist, orbitalAngle, severity);
+
+        // Ignite polar relativistic jets as mass fuels the black hole
+        const jetIntensity = Math.min(0.85, severity * 1.4);
+        if (this.northJet) this.northJet.material.opacity = jetIntensity;
+        if (this.southJet) this.southJet.material.opacity = jetIntensity;
       } else {
+        // Normal spherical body
         this.targetMesh.scale.set(1, 1, 1);
-        this.updatePlasmaStream(visualDist, false);
+        if (this.targetMesh.material) {
+          this.targetMesh.material.opacity = 1.0;
+          this.targetMesh.material.transparent = false;
+        }
+        if (this.plasmaMesh) this.plasmaMesh.visible = false;
+        if (this.northJet) this.northJet.material.opacity = 0.0;
+        if (this.southJet) this.southJet.material.opacity = 0.0;
       }
     }
 
-    // Telemetry text output
     this.renderTelemetry();
   }
 
-  updatePlasmaStream(targetDist, isDisrupted) {
+  updatePlasmaStream(startDist, startAngle, severity) {
     if (!this.plasmaMesh) return;
+    this.plasmaMesh.visible = true;
+
     const posAttr = this.plasmaMesh.geometry.attributes.position;
     const colAttr = this.plasmaMesh.geometry.attributes.color;
+    const count = this.streamCount;
 
-    if (!isDisrupted) {
-      this.plasmaMesh.visible = false;
-      return;
-    }
-
-    this.plasmaMesh.visible = true;
-    const count = this.plasmaCount;
-
+    // Logarithmic Keplerian spiral stream wrapping from target into event horizon
     for (let i = 0; i < count; i++) {
-      const t = i / count; // 0 at target body, 1 at event horizon
-      const spiralTurns = 3.5 * t;
-      const r = targetDist * (1 - t) + 1.4 * t;
-      const angle = spiralTurns * Math.PI * 2;
+      const t = i / count; // 0 at body, 1 at event horizon
+      const r = startDist * (1 - t) + 1.4 * t;
+      const spiralWinding = startAngle + t * Math.PI * 4.2;
 
-      posAttr.array[i * 3] = Math.cos(angle) * r + (Math.random() - 0.5) * 0.15;
-      posAttr.array[i * 3 + 1] = (Math.random() - 0.5) * 0.18;
-      posAttr.array[i * 3 + 2] = Math.sin(angle) * r + (Math.random() - 0.5) * 0.15;
+      // Scatter spread increases as it wraps
+      const spread = 0.08 + t * 0.18;
+      const x = Math.cos(spiralWinding) * r + (Math.random() - 0.5) * spread;
+      const y = (Math.random() - 0.5) * spread * 0.8;
+      const z = Math.sin(spiralWinding) * r + (Math.random() - 0.5) * spread;
 
-      // Color gets hotter / brighter as plasma approaches black hole
-      colAttr.array[i * 3] = 1.0;
-      colAttr.array[i * 3 + 1] = 0.4 + 0.6 * t; // white-hot near event horizon
-      colAttr.array[i * 3 + 2] = 0.1 + 0.8 * t;
+      posAttr.array[i * 3] = x;
+      posAttr.array[i * 3 + 1] = y;
+      posAttr.array[i * 3 + 2] = z;
+
+      // Color temperature gets blinding white-hot near event horizon
+      if (t > 0.6) {
+        colAttr.array[i * 3] = 1.0;
+        colAttr.array[i * 3 + 1] = 0.95;
+        colAttr.array[i * 3 + 2] = 0.9; // White-hot plasma
+      } else {
+        colAttr.array[i * 3] = 1.0;
+        colAttr.array[i * 3 + 1] = this.scenario === 'sun' ? 0.6 : 0.4;
+        colAttr.array[i * 3 + 2] = 0.1;
+      }
     }
 
     posAttr.needsUpdate = true;
@@ -272,57 +398,69 @@ export class BlackHoleSimulator {
     const M = this.blackHoleMass;
     const rsKm = (2 * 6.674e-11 * M * 1.989e30) / Math.pow(299792458, 2) / 1000;
 
-    let status = '';
+    let phaseTitle = 'Phase 1: Gravitational Capture';
+    let phaseDesc = '';
     let badgeClass = 'status-nominal';
 
     if (this.scenario === 'sun') {
-      if (d > 5.0) {
-        status = `The Sun is in an unperturbed orbital approach at ${d.toFixed(1)} AU. Solar flares are mildly active.`;
-      } else if (d > 2.8) {
-        status = `WARNING: Extreme gravitational tides detected. Solar corona expanding rapidly toward the singularity.`;
+      if (d > 5.5) {
+        phaseTitle = 'Phase 1: Gravitational Capture';
+        phaseDesc = `The Sun enters the black hole's gravity well at ${d.toFixed(1)} AU. Solar orbits begin warping.`;
+      } else if (d > 3.0) {
+        phaseTitle = 'Phase 2: Extreme Tidal Stretching';
+        phaseDesc = `Massive solar coronal mass ejections erupt. Differential gravity pulls the facing hemisphere faster.`;
         badgeClass = 'status-warning';
-      } else if (d > 1.0) {
-        status = `CRITICAL: ROCHE LIMIT BREACHED. Tidal disruption event in progress! The Sun is being spaghettified into a massive glowing plasma accretion stream.`;
+      } else if (d > 1.4) {
+        phaseTitle = 'Phase 3: Roche Limit Rupture (Spaghettification)';
+        phaseDesc = `CRITICAL: The Sun's self-gravity is completely overwhelmed! Solar plasma is pulled into a continuous swirling relativistic accretion ribbon!`;
         badgeClass = 'status-critical';
       } else {
-        status = `TERMINAL ENGULFMENT: Over 75% of the Sun's mass has been swallowed by the black hole. High-energy X-ray relativistic jets erupt!`;
+        phaseTitle = 'Phase 4: Terminal Accretion & Relativistic Jets';
+        phaseDesc = `CATASTROPHIC ACCRETION: Solar core swallowed past event horizon. Twin relativistic particle jets blast out from the poles at 99.8% the speed of light!`;
         badgeClass = 'status-critical';
       }
     } else if (this.scenario === 'earth') {
-      if (d > 4.0) {
-        status = `Earth is experiencing subtle orbital precession at ${d.toFixed(1)} AU. Climate disrupted.`;
-      } else if (d > 2.0) {
-        status = `GLOBAL CATACLYSM: Atmosphere stripped into space; tectonic plates buckling under tidal stresses.`;
+      if (d > 4.5) {
+        phaseTitle = 'Phase 1: Orbital Disruption';
+        phaseDesc = `Earth is pulled from the Habitable Zone at ${d.toFixed(1)} AU. Extreme climate chaos begins.`;
+      } else if (d > 2.2) {
+        phaseTitle = 'Phase 2: Atmospheric Stripping';
+        phaseDesc = `Atmosphere and oceans are ripped away into space; tectonic plates buckle into global volcanic rifts.`;
         badgeClass = 'status-warning';
       } else {
-        status = `PLANETARY DESTRUCTION: Earth crosses the Roche limit. The planet is crushed and shredded into a molten ring of debris.`;
+        phaseTitle = 'Phase 3: Total Planetary Shredding';
+        phaseDesc = `ROCHE LIMIT BREACHED: The Earth is crushed and shredded into a ring of molten rubble before vanishing past the event horizon.`;
         badgeClass = 'status-critical';
       }
     } else {
-      status = `Gravitational Lensing: Starlight passing within distance ${d.toFixed(1)} AU is deflected by angle θ = 4GM/(c²b), forming a complete Einstein Ring around the photon sphere!`;
-      badgeClass = 'status-nominal';
+      phaseTitle = 'Gravitational Lensing & Light Bending';
+      phaseDesc = `General Relativity in action: Light rays passing at ${d.toFixed(1)} AU bend by angle θ = 4GM/(c²b), creating complete Einstein rings and double distorted images!`;
     }
 
     this.telemetryElem.innerHTML = `
       <div class="bh-hud-status ${badgeClass}">
-        <span class="hud-indicator-dot"></span> ${status}
+        <span class="hud-indicator-dot"></span>
+        <div>
+          <div style="font-weight: 800; font-size: 0.88rem;">${phaseTitle}</div>
+          <div style="font-size: 0.8rem; margin-top: 0.2rem;">${phaseDesc}</div>
+        </div>
       </div>
       <div class="bh-metrics-grid">
         <div class="bh-metric-item">
-          <span class="metric-title">Event Horizon Radius (rₛ)</span>
+          <span class="metric-title">Event Horizon (rₛ)</span>
           <span class="metric-value">${rsKm.toFixed(1)} km</span>
         </div>
         <div class="bh-metric-item">
-          <span class="metric-title">Approach Distance</span>
+          <span class="metric-title">Distance (AU)</span>
           <span class="metric-value">${d.toFixed(2)} AU (${(d * 149.6).toFixed(1)}M km)</span>
         </div>
         <div class="bh-metric-item">
-          <span class="metric-title">Tidal Gravity Differential</span>
-          <span class="metric-value">${(100 / Math.pow(d, 3)).toFixed(1)}× G-Limit</span>
+          <span class="metric-title">Tidal Force</span>
+          <span class="metric-value">${(250 / Math.pow(Math.max(0.5, d), 3)).toFixed(0)}× Earth Normal</span>
         </div>
         <div class="bh-metric-item">
-          <span class="metric-title">Accretion Disk Temp</span>
-          <span class="metric-value">${(d < 2.8 ? 12.4 : 1.2).toFixed(1)} Million K</span>
+          <span class="metric-title">Relativistic Jets</span>
+          <span class="metric-value" style="color: ${d < 2.5 ? '#00f3ff' : '#64748b'};">${d < 2.5 ? 'Active (0.998 c)' : 'Dormant'}</span>
         </div>
       </div>
     `;
@@ -331,40 +469,58 @@ export class BlackHoleSimulator {
   animate() {
     requestAnimationFrame(this.animate);
 
-    if (this.isThree) {
-      // Accretion disk Keplerian orbital motion
-      if (this.accretionDisk) {
-        const posAttr = this.accretionDisk.geometry.attributes.position;
-        const colAttr = this.accretionDisk.geometry.attributes.color;
+    // Automated Collision Progression
+    if (this.isPlaying) {
+      this.simProgress += this.simSpeed;
+      if (this.simProgress >= 1.0) {
+        this.simProgress = 1.0;
+        this.isPlaying = false;
+      }
+      this.distanceAU = 10.0 - this.simProgress * 9.8; // 10.0 down to 0.2
+      this.updateScenarioPhysics();
 
-        for (let i = 0; i < this.diskData.length; i++) {
-          const item = this.diskData[i];
+      // Update external UI slider
+      const slider = document.getElementById('slider-bh-distance');
+      const valDisp = document.getElementById('val-bh-distance');
+      if (slider) slider.value = this.distanceAU.toFixed(1);
+      if (valDisp) valDisp.textContent = this.distanceAU.toFixed(1) + ' AU';
+    }
+
+    if (this.isThree) {
+      // Rotate accretion disk particles with Keplerian motion
+      if (this.diskMeshH) {
+        const posAttr = this.diskMeshH.geometry.attributes.position;
+        const colAttr = this.diskMeshH.geometry.attributes.color;
+
+        for (let i = 0; i < this.diskParticlesH.length; i++) {
+          const item = this.diskParticlesH[i];
           item.angle += item.speed;
 
-          const x = Math.cos(item.angle) * item.radius;
-          const z = Math.sin(item.angle) * item.radius;
+          posAttr.array[i * 3] = Math.cos(item.angle) * item.radius;
+          posAttr.array[i * 3 + 2] = Math.sin(item.angle) * item.radius;
 
-          posAttr.array[i * 3] = x;
-          posAttr.array[i * 3 + 2] = z;
-
-          // Relativistic Doppler Beaming:
-          // Stars/plasma moving toward observer (z > 0 with positive dx/dt) appear brighter and blue-shifted
-          const velocityTowardsViewer = -Math.sin(item.angle);
-          if (velocityTowardsViewer > 0) {
-            colAttr.array[i * 3] = 0.4;
-            colAttr.array[i * 3 + 1] = 0.8;
-            colAttr.array[i * 3 + 2] = 1.0; // Blue shifted
+          // Doppler beaming: approaching side is brighter & blue-shifted
+          const vToward = -Math.sin(item.angle);
+          if (vToward > 0) {
+            colAttr.array[i * 3] = 0.5;
+            colAttr.array[i * 3 + 1] = 0.85;
+            colAttr.array[i * 3 + 2] = 1.0;
           } else {
             colAttr.array[i * 3] = 1.0;
-            colAttr.array[i * 3 + 1] = 0.3;
-            colAttr.array[i * 3 + 2] = 0.05; // Red shifted
+            colAttr.array[i * 3 + 1] = 0.4;
+            colAttr.array[i * 3 + 2] = 0.05;
           }
         }
         posAttr.needsUpdate = true;
         colAttr.needsUpdate = true;
       }
 
-      // Keep photon ring facing camera
+      // Rotate vertical warped halo slowly
+      if (this.diskMeshV) {
+        this.diskMeshV.rotation.z += 0.003;
+      }
+
+      // Face photon ring to camera
       if (this.photonRing) {
         this.photonRing.lookAt(this.camera.position);
       }
@@ -380,7 +536,6 @@ export class BlackHoleSimulator {
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     this.container.appendChild(this.canvas);
-    this.angle = 0;
   }
 
   renderCanvasFallback() {
@@ -396,31 +551,26 @@ export class BlackHoleSimulator {
 
     const cx = w / 2;
     const cy = h / 2;
-    this.angle += 0.02;
 
-    // Glowing accretion disk
-    const diskGrad = ctx.createRadialGradient(cx, cy, 30, cx, cy, 120);
-    diskGrad.addColorStop(0, '#ffffff');
-    diskGrad.addColorStop(0.3, '#ffaa00');
-    diskGrad.addColorStop(0.8, '#ff3300');
-    diskGrad.addColorStop(1, 'transparent');
-
-    ctx.fillStyle = diskGrad;
+    // Glowing Gargantua accretion halo
+    ctx.strokeStyle = '#ffaa00';
+    ctx.lineWidth = 18;
     ctx.beginPath();
-    ctx.ellipse(cx, cy, 130, 45, 0.35, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.ellipse(cx, cy, 140, 50, 0.4, 0, Math.PI * 2);
+    ctx.stroke();
 
-    // Event Horizon Shadow
+    // Event horizon
     ctx.fillStyle = '#000000';
     ctx.beginPath();
-    ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 42, 0, Math.PI * 2);
     ctx.fill();
 
-    // Target object
-    const targetX = cx + (this.distanceAU / 10.0) * 160;
-    ctx.fillStyle = this.scenario === 'sun' ? '#ffcc00' : '#00aaff';
+    // Target body
+    const dFactor = this.distanceAU / 10.0;
+    const tx = cx + dFactor * 160;
+    ctx.fillStyle = this.scenario === 'sun' ? '#ffe600' : '#00f3ff';
     ctx.beginPath();
-    ctx.arc(targetX, cy, 14, 0, Math.PI * 2);
+    ctx.arc(tx, cy, 12, 0, Math.PI * 2);
     ctx.fill();
   }
 }

@@ -785,3 +785,38 @@ input[type="range"]::-webkit-slider-thumb:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   SIMULATION PLAYBACK & TERMINOLOGY ENHANCEMENTS
+   ========================================================================== */
+.sim-playback-box {
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid var(--accent-cyan-dim);
+  border-radius: 12px;
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.terminology-box {
+  background: rgba(138, 43, 226, 0.12);
+  border-left: 3px solid var(--accent-violet);
+  border-radius: 0 10px 10px 0;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.term-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #c084fc;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.term-text {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  line-height: 1.55;
+}

@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     stationSections.forEach(sec => {
       sec.classList.toggle('active', sec.id === `station-${stationId}`);
     });
-    // Trigger window resize to ensure Three.js cameras adapt
     window.dispatchEvent(new Event('resize'));
     if (audioPlaying) audio.playChime(1.2);
   }
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (galaxyContainer) {
     galaxyInstance = new MilkyWayGalaxy(galaxyContainer);
 
-    // POI fly-to buttons
     document.querySelectorAll('[data-galaxy-target]').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('[data-galaxy-target]').forEach(b => b.classList.remove('active'));
@@ -70,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Rotation speed slider
     const galaxySpeedSlider = document.getElementById('slider-galaxy-speed');
     if (galaxySpeedSlider) {
       galaxySpeedSlider.addEventListener('input', (e) => {
@@ -80,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ----------------------------------------------------
-  // STATION 2: BLACK HOLE & CATACLYSM SANDBOX
+  // STATION 2: REAL BLACK HOLE & CATACLYSM COLLISION SANDBOX
   // ----------------------------------------------------
   const bhContainer = document.getElementById('blackholeViewport');
   const bhTelemetry = document.getElementById('bhTelemetryBox');
@@ -88,18 +85,43 @@ document.addEventListener('DOMContentLoaded', () => {
   if (bhContainer) {
     bhInstance = new BlackHoleSimulator(bhContainer, bhTelemetry);
 
-    // Scenario selection (Sun vs Earth vs Light)
     document.querySelectorAll('[data-bh-scenario]').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('[data-bh-scenario]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const sc = btn.getAttribute('data-bh-scenario');
         bhInstance.setScenario(sc);
+        const playBtn = document.getElementById('btn-bh-play');
+        if (playBtn) playBtn.textContent = '▶ Play Simulation';
         if (audioPlaying) audio.playChime(0.9);
       });
     });
 
-    // Distance Slider (10 AU to 0.1 AU)
+    // Play / Pause Simulation Button
+    const playBtn = document.getElementById('btn-bh-play');
+    if (playBtn) {
+      playBtn.addEventListener('click', () => {
+        const isPlaying = bhInstance.togglePlay();
+        playBtn.textContent = isPlaying ? '⏸ Pause Simulation' : '▶ Play Simulation';
+        if (audioPlaying) audio.playChime(isPlaying ? 1.5 : 0.8);
+      });
+    }
+
+    // Reset Simulation Button
+    const resetBtn = document.getElementById('btn-bh-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        bhInstance.resetSimulation();
+        if (playBtn) playBtn.textContent = '▶ Play Simulation';
+        const slider = document.getElementById('slider-bh-distance');
+        const valDisp = document.getElementById('val-bh-distance');
+        if (slider) slider.value = '10.0';
+        if (valDisp) valDisp.textContent = '10.0 AU';
+        if (audioPlaying) audio.playChime(1.1);
+      });
+    }
+
+    // Distance Slider (10 AU to 0.2 AU)
     const bhDistSlider = document.getElementById('slider-bh-distance');
     const bhDistVal = document.getElementById('val-bh-distance');
     if (bhDistSlider) {
@@ -107,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const val = parseFloat(e.target.value);
         if (bhDistVal) bhDistVal.textContent = val.toFixed(1) + ' AU';
         bhInstance.setDistance(val);
+        if (playBtn) playBtn.textContent = '▶ Play Simulation';
       });
     }
   }
@@ -119,11 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let pulsarInstance = null;
   if (pulsarContainer) {
     pulsarInstance = new PulsarSimulator(pulsarContainer, pulsarTelemetry, () => {
-      // Synchronized audio pulse
       if (audioPlaying) audio.playPulsarClick();
     });
 
-    // Spin Frequency Slider
     const spinSlider = document.getElementById('slider-pulsar-spin');
     const spinVal = document.getElementById('val-pulsar-spin');
     if (spinSlider) {
@@ -134,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Magnetic Tilt Slider
     const tiltSlider = document.getElementById('slider-pulsar-tilt');
     const tiltVal = document.getElementById('val-pulsar-tilt');
     if (tiltSlider) {
@@ -155,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (rocketContainer) {
     rocketInstance = new RocketExplodedViewer(rocketContainer, rocketTelemetry);
 
-    // 0-100% Explode Slider
     const explodeSlider = document.getElementById('slider-rocket-explode');
     const explodeVal = document.getElementById('val-rocket-explode');
     if (explodeSlider) {
@@ -173,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
   new MissionsManager('voyagerTelemetryBox');
 
   // ----------------------------------------------------
-  // STATION 6: 4D TESSERACT INTERACTIVE WIDGET
+  // STATION 6: THE TESSERACT (4D HYPERCUBE)
   // ----------------------------------------------------
   const tesseractCanvas = document.getElementById('tesseractCanvas');
   if (tesseractCanvas) {
