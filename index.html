@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COSMOS | Milky Way, Real Black Hole Sandbox, Pulsar & The Tesseract</title>
-  <meta name="description" content="Explore our complete Milky Way Galaxy in 3D, simulate realistic Black Hole collisions with the Sun and Earth (Tidal Disruption & Spaghettification), inspect an exploded 3D rocket, track Voyager, and interact with the Tesseract (4D Hypercube).">
+  <title>COSMOS | Milky Way, Gargantua, Wormhole Flight, Big Bang & The Tesseract</title>
+  <meta name="description" content="Fly through a 4D Einstein-Rosen Wormhole, simulate the Big Bang inflation to the Cosmic Web, explore the Gargantua Black Hole spaghettification sandbox, orbit our 3D Milky Way, and inspect the Tesseract.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260923-04">
+  <link rel="stylesheet" href="styles.css?v=20260923-05">
 </head>
 <body>
 
@@ -25,9 +25,11 @@
     <ul class="nav-stations">
       <li><a href="#station-galaxy" class="station-tab-btn active">🌌 Milky Way</a></li>
       <li><a href="#station-blackhole" class="station-tab-btn">🕳️ Black Hole Sandbox</a></li>
+      <li><a href="#station-wormhole" class="station-tab-btn">🌀 Wormhole Flight</a></li>
+      <li><a href="#station-bigbang" class="station-tab-btn">💥 Big Bang</a></li>
       <li><a href="#station-pulsar" class="station-tab-btn">⚡ Pulsar</a></li>
-      <li><a href="#station-rocket" class="station-tab-btn">🚀 3D Exploded Rocket</a></li>
-      <li><a href="#station-voyager" class="station-tab-btn">🛰️ Voyager Missions</a></li>
+      <li><a href="#station-rocket" class="station-tab-btn">🚀 Exploded Rocket</a></li>
+      <li><a href="#station-voyager" class="station-tab-btn">🛰️ Voyager</a></li>
       <li><a href="#station-tesseract" class="station-tab-btn">🧊 Tesseract (4D)</a></li>
     </ul>
 
@@ -52,7 +54,7 @@
           <span class="cosmic-badge">Galactic Observatory</span>
           <h2 class="station-title">Milky Way Galaxy 3D Simulator</h2>
           <p class="station-subtitle">
-            An authentic 15,000+ star logarithmic spiral density wave model of our home galaxy. Rotate, tilt, and zoom from the 100,000 light-year whole-galaxy view down into our Solar System in the Orion Spur.
+            An authentic 20,000+ star logarithmic spiral density wave model of our home galaxy with volumetric interstellar dust lanes (The Great Rift). Rotate, tilt, and zoom from the 100,000 light-year whole-galaxy view down into our Solar System in the Orion Spur.
           </p>
         </div>
       </div>
@@ -154,9 +156,9 @@
             <div class="control-slider-group">
               <div class="slider-label-row">
                 <span>Manual Distance Scrubber:</span>
-                <span class="slider-val-badge" id="val-bh-distance">8.0 AU</span>
+                <span class="slider-val-badge" id="val-bh-distance">8.5 AU</span>
               </div>
-              <input type="range" id="slider-bh-distance" class="gold-thumb" min="0.2" max="10.0" step="0.1" value="8.0">
+              <input type="range" id="slider-bh-distance" class="gold-thumb" min="0.2" max="10.0" step="0.1" value="8.5">
               <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-top: 0.3rem;">
                 <span>0.2 AU (Swallowed)</span>
                 <span>5.0 AU</span>
@@ -166,14 +168,118 @@
           </div>
 
           <div id="bhTelemetryBox" class="telemetry-card-box">
-            <!-- Dynamically populated by blackhole.js with multi-phase descriptions -->
+            <!-- Dynamically populated by blackhole.js -->
           </div>
         </div>
       </div>
     </section>
 
     <!-- ======================================================================
-         STATION 3: 3D PULSAR (NEUTRON STAR)
+         STATION 3: 🌀 TRAVERSABLE WORMHOLE FLIGHT SIMULATOR (NEW & MINDBLOWING)
+         ====================================================================== -->
+    <section id="station-wormhole" class="station-section">
+      <div class="station-banner">
+        <div>
+          <span class="cosmic-badge">Curved 4D Spacetime Bridge</span>
+          <h2 class="station-title">Traversable Wormhole (Einstein-Rosen Bridge) Flight</h2>
+          <p class="station-subtitle">
+            Fly directly *inside* and *through* the throat of a 4-dimensional wormhole! Move the flight velocity slider to experience superluminal hyperspace warp and emerge into a distant galaxy 10 billion light-years away.
+          </p>
+        </div>
+      </div>
+
+      <div class="simulator-stage-grid">
+        <div class="stage-canvas-box">
+          <div id="wormholeViewport" class="stage-canvas-viewport"></div>
+          <div class="canvas-hint-overlay">
+            <span>✦</span> Orbit with Mouse to Look Around Inside the 4D Spacetime Throat
+          </div>
+        </div>
+
+        <div class="stage-control-panel">
+          <div>
+            <div class="panel-header">
+              <span class="panel-title"><span class="status-indicator-dot"></span> Warp Flight Navigation</span>
+            </div>
+
+            <div class="control-slider-group">
+              <div class="slider-label-row">
+                <span style="font-weight: 700; color: #ffffff;">Hyperspace Warp Velocity:</span>
+                <span class="slider-val-badge" id="val-wormhole-speed" style="font-size: 1.15rem;">1.0 c</span>
+              </div>
+              <input type="range" id="slider-wormhole-speed" min="0.1" max="9.9" step="0.1" value="1.0">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-top: 0.3rem;">
+                <span>0.1 c (Sub-Light)</span>
+                <span>1.0 c (Light Speed)</span>
+                <span>9.9 c (Maximum Warp)</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="wormholeTelemetryBox" class="telemetry-card-box">
+            <!-- Dynamically populated by wormhole.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         STATION 4: 💥 THE BIG BANG & COSMIC WEB (NEW & MINDBLOWING)
+         ====================================================================== -->
+    <section id="station-bigbang" class="station-section">
+      <div class="station-banner">
+        <div>
+          <span class="cosmic-badge gold">Genesis of Spacetime</span>
+          <h2 class="station-title">The Big Bang & Cosmic Web Origin Simulator</h2>
+          <p class="station-subtitle">
+            Witness the birth of the universe from an infinitesimal Planck singularity ($t = 0$, $10^{32}\text{ K}$). Hit <strong>Ignite Big Bang</strong> to detonate the inflationary shockwave and watch 20,000 galaxies condense into the modern Cosmic Web!
+          </p>
+        </div>
+      </div>
+
+      <div class="simulator-stage-grid">
+        <div class="stage-canvas-box">
+          <div id="bigbangViewport" class="stage-canvas-viewport"></div>
+          <div class="canvas-hint-overlay">
+            <span>✦</span> 20,000 Primordial Matter Nodes Condensing along Dark Matter Filaments
+          </div>
+        </div>
+
+        <div class="stage-control-panel">
+          <div>
+            <div class="panel-header">
+              <span class="panel-title"><span class="status-indicator-dot"></span> Cosmic Timeline Controls</span>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.9rem;">
+              <button id="btn-bigbang-ignite" class="chip-btn active-gold" style="flex: 1.2; padding: 0.55rem; font-weight: 800;">💥 Ignite Big Bang</button>
+              <button id="btn-bigbang-play" class="chip-btn active" style="flex: 1; padding: 0.55rem;">▶ Play</button>
+              <button id="btn-bigbang-reset" class="chip-btn" style="padding: 0.55rem 0.8rem;">↺ Reset</button>
+            </div>
+
+            <div class="control-slider-group">
+              <div class="slider-label-row">
+                <span>Cosmic Epoch Scrubber:</span>
+                <span class="slider-val-badge" id="val-bigbang-time">0.00 Gyr</span>
+              </div>
+              <input type="range" id="slider-bigbang-time" class="gold-thumb" min="0" max="13.8" step="0.1" value="0">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-top: 0.3rem;">
+                <span>0 (Singularity)</span>
+                <span>6.9 Gyr</span>
+                <span>13.8 Gyr (Present Day)</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="bigbangTelemetryBox" class="telemetry-card-box">
+            <!-- Dynamically populated by bigbang.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         STATION 5: 3D PULSAR (NEUTRON STAR)
          ====================================================================== -->
     <section id="station-pulsar" class="station-section">
       <div class="station-banner">
@@ -225,7 +331,7 @@
     </section>
 
     <!-- ======================================================================
-         STATION 4: 3D ROCKET WITH EXPLODED VIEW
+         STATION 6: 3D ROCKET WITH EXPLODED VIEW
          ====================================================================== -->
     <section id="station-rocket" class="station-section">
       <div class="station-banner">
@@ -274,7 +380,7 @@
     </section>
 
     <!-- ======================================================================
-         STATION 5: VOYAGER MISSIONS & DEEP SPACE
+         STATION 7: VOYAGER MISSIONS & DEEP SPACE
          ====================================================================== -->
     <section id="station-voyager" class="station-section">
       <div class="station-banner">
@@ -287,12 +393,10 @@
         </div>
       </div>
 
-      <!-- Live Distance Ticker Container -->
       <div id="voyagerTelemetryBox">
         <!-- Dynamically populated by missions.js -->
       </div>
 
-      <!-- Missions Compendium Cards -->
       <div class="missions-grid">
         <div class="mission-card">
           <div class="mission-icon">📀</div>
@@ -326,7 +430,7 @@
     </section>
 
     <!-- ======================================================================
-         STATION 6: THE TESSERACT (4D HYPERCUBE)
+         STATION 8: THE TESSERACT (4D HYPERCUBE)
          ====================================================================== -->
     <section id="station-tesseract" class="station-section">
       <div class="station-banner">
@@ -345,7 +449,6 @@
         </div>
 
         <div>
-          <!-- Cosmic Terminology Insight -->
           <div class="terminology-box">
             <span class="term-badge">💡 Terminology Clarification</span>
             <p class="term-text">
@@ -380,7 +483,7 @@
   <footer class="footer">
     <div class="footer-brand">COSMOS EXPLORATION SYSTEM</div>
     <p>
-      An astrophysical portal for real-time 3D simulation of our Milky Way Galaxy, Black Hole relativity, Pulsars, Rocket engineering, Voyager missions, and 4D geometry.
+      An astrophysical portal for real-time 3D simulation of our Milky Way Galaxy, Black Hole relativity, Wormhole flight, the Big Bang, Pulsars, Rocket engineering, Voyager missions, and 4D geometry.
     </p>
   </footer>
 
@@ -389,6 +492,6 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <!-- Application Module with cache buster -->
-  <script type="module" src="./js/app.js?v=20260923-04"></script>
+  <script type="module" src="./js/app.js?v=20260923-05"></script>
 </body>
 </html>

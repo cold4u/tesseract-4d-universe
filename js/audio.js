@@ -1,7 +1,7 @@
 /**
  * Movie-Grade Interstellar Cinematic Soundscape
  * Features pipe-organ harmonic progressions, low-frequency gravitational wave rumble,
- * pulsar radio clicks, and collision crescendo audio.
+ * pulsar radio clicks, hyperspace warp whooshes, and Big Bang shockwave detonations.
  */
 
 export class CosmicAudio {
@@ -84,7 +84,6 @@ export class CosmicAudio {
       this.masterGain.gain.exponentialRampToValueAtTime(0.22, this.ctx.currentTime + 2.0);
       this.isPlaying = true;
 
-      // Advance chord every 6 seconds for moving cinematic emotion
       this.chordTimer = setInterval(() => {
         if (!this.isPlaying || !this.ctx) return;
         this.chordStep = (this.chordStep + 1) % this.chords.length;
@@ -117,6 +116,50 @@ export class CosmicAudio {
 
       osc.start(now);
       osc.stop(now + 0.055);
+    } catch (e) {}
+  }
+
+  playWarp(speed = 1.0) {
+    if (!this.ctx || !this.isPlaying) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(350 + speed * 120, now + 0.5);
+
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(now);
+      osc.stop(now + 0.65);
+    } catch (e) {}
+  }
+
+  playBigBang() {
+    if (!this.ctx || !this.isPlaying) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(28, now + 1.2);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(now);
+      osc.stop(now + 1.85);
     } catch (e) {}
   }
 
